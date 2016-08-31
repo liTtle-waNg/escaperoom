@@ -20,7 +20,9 @@ public:
 	
 	// Called every frame
 	virtual void TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction ) override;
-
+private:
+	//How Far ahead can the vector reach
+	float Reach = 100.f;
 		
 	
 };

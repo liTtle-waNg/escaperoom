@@ -39,6 +39,7 @@ void UGrabber::BeginPlay()
 		UE_LOG(LogTemp, Log, TEXT("The Input Component has been found attached to %s!"), *GetOwner()->GetName())
 		/// Bind the input axis
 		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
 	else
 	{
@@ -50,6 +51,11 @@ void UGrabber::BeginPlay()
 void UGrabber::Grab() 
 {
 	UE_LOG(LogTemp, Log, TEXT("Grab Key Pressed"))
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Log, TEXT("Grab Key Released"))
 }
 
 // Called every frame

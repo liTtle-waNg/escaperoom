@@ -11,8 +11,6 @@ UGrabber::UGrabber()
 	// off to improve performance if you don't need them.
 	bWantsBeginPlay = true;
 	PrimaryComponentTick.bCanEverTick = true;
-
-	// ...
 }
 
 
@@ -20,7 +18,31 @@ UGrabber::UGrabber()
 void UGrabber::BeginPlay()
 {
 	Super::BeginPlay();
-	UE_LOG(LogTemp, Warning, TEXT("Grabber reporting for duty!"));
+	FindPhysicsHandleComponent();
+	SetupInputComponent();
+}
+
+void UGrabber::Grab() 
+{
+	UE_LOG(LogTemp, Log, TEXT("Grab Key Pressed"))
+
+	/// LINE TRACE and see if we reach any actors with physics body collision channel set
+	GetFirstPhysicsBodyInreach();
+
+	/// Try and reach any actors with physics body collision channel set
+
+	///If we hit something then attach physics handle
+}
+
+void UGrabber::Release()
+{
+	UE_LOG(LogTemp, Log, TEXT("Grab Key Released"))
+
+	///Release physics handle
+}
+
+void UGrabber::FindPhysicsHandleComponent()
+{
 	/// Look for attached physics handle
 	PhysicsHandle = GetOwner()->FindComponentByClass<UPhysicsHandleComponent>();
 	if (PhysicsHandle)
@@ -31,56 +53,48 @@ void UGrabber::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("The Physics handle is missing from %s"), *GetOwner()->GetName())
 	}
+}
+
+void UGrabber::SetupInputComponent()
+{
 	///Look for attached input component
 	InputComponent = GetOwner()->FindComponentByClass<UInputComponent>();
 	if (InputComponent)
 	{
 		//Input component is found
 		UE_LOG(LogTemp, Log, TEXT("The Input Component has been found attached to %s!"), *GetOwner()->GetName())
-		/// Bind the input axis
-		InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
+			/// Bind the input axis
+			InputComponent->BindAction("Grab", IE_Pressed, this, &UGrabber::Grab);
 		InputComponent->BindAction("Grab", IE_Released, this, &UGrabber::Release);
 	}
 	else
 	{
-		//input component has not benn found
+		//input component has not been found
 		UE_LOG(LogTemp, Error, TEXT("The Input Component is missing from %s"), *GetOwner()->GetName())
 	}
 }
 
-void UGrabber::Grab() 
+const FHitResult UGrabber::GetFirstPhysicsBodyInreach()
 {
-	UE_LOG(LogTemp, Log, TEXT("Grab Key Pressed"))
-}
-
-void UGrabber::Release()
-{
-	UE_LOG(LogTemp, Log, TEXT("Grab Key Released"))
-}
-
-// Called every frame
-void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
-{
-	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+	///Get player viewpoint this tick
 	FVector PlayerViewPointLocation;
 	FRotator PlayerViewPointRotation;
-	///Get player viewpoint this tick
 	GetWorld()->GetFirstPlayerController()->GetPlayerViewPoint(
 		OUT PlayerViewPointLocation,
 		OUT PlayerViewPointRotation
 	);
 	FVector LineTraceEnd = PlayerViewPointLocation + PlayerViewPointRotation.Vector() * Reach;
 	//Draw a red trace in the world to visualize
-	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0.f, 0.f,10.f);
+	DrawDebugLine(GetWorld(), PlayerViewPointLocation, LineTraceEnd, FColor(255, 0, 0), false, 0.f, 0.f, 10.f);
 	///Setup query params
 	FCollisionQueryParams TraceParameters(FName(TEXT("")), false, GetOwner());
 	///Line trace (AKA Ray-cast out to reach distance)
 	FHitResult Hit;
 	GetWorld()->LineTraceSingleByObjectType(
-		OUT Hit, 
-		PlayerViewPointLocation, 
-		LineTraceEnd, 
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody), 
+		OUT Hit,
+		PlayerViewPointLocation,
+		LineTraceEnd,
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_PhysicsBody),
 		TraceParameters
 	);
 	///See what we hit
@@ -89,5 +103,16 @@ void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorCompon
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Line trace hit: %s"), *(ActorHit->GetName()))
 	}
+	return FHitResult();
+}
+
+// Called every frame
+void UGrabber::TickComponent( float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction )
+{
+	Super::TickComponent( DeltaTime, TickType, ThisTickFunction );
+
+	//if the physics handle is attached
+		//move the object that we're holding
+
 }
 
